@@ -84,7 +84,7 @@
     },
     "switch": {
       "cruise": {
-        "name": "零冷水", 
+        "name": "零冷水",
         "icon": "mdi:water-sync"
       },
       "pressurize": {
@@ -94,6 +94,13 @@
       "half_pipe": {
         "name": "节能零冷水",
         "icon": "mdi:pipe"
+      }
+    },
+    "number": {
+      "curies_time": {
+        "name": "一键零冷水运行时长",
+        "icon": "mdi:timer-cog",
+        "unit": "分钟"
       }
     }
   }

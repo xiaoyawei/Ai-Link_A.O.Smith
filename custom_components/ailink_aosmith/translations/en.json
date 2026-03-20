@@ -84,7 +84,7 @@
     },
     "switch": {
       "cruise": {
-        "name": "Zero Cold Water", 
+        "name": "Zero Cold Water",
         "icon": "mdi:water-sync"
       },
       "pressurize": {
@@ -94,6 +94,13 @@
       "half_pipe": {
         "name": "Eco Zero Cold Water",
         "icon": "mdi:pipe"
+      }
+    },
+    "number": {
+      "curies_time": {
+        "name": "One-Key Zero Cold Water Runtime",
+        "icon": "mdi:timer-cog",
+        "unit": "minutes"
       }
     }
   }

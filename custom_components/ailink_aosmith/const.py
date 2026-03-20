@@ -22,7 +22,7 @@ DEFAULT_UPDATE_INTERVAL = 60
 DEFAULT_ENABLE_RAW_SENSORS = True
 
 # Platforms provided by this integration
-PLATFORMS = ["water_heater", "sensor", "switch"]
+PLATFORMS = ["water_heater", "sensor", "switch", "number"]
 
 # Coordinator update interval (seconds)
 UPDATE_INTERVAL = DEFAULT_UPDATE_INTERVAL
