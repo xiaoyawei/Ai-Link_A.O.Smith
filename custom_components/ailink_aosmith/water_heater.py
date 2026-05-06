@@ -10,7 +10,7 @@ from homeassistant.components.water_heater import (
     WaterHeaterEntityFeature,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_TEMPERATURE, STATE_OFF, UnitOfTemperature
+from homeassistant.const import ATTR_TEMPERATURE, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -41,7 +41,6 @@ class AOSmithWaterHeater(AOSmithEntity, WaterHeaterEntity):
     """A.O. Smith water heater with independent state controls."""
 
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
-    _logged_homekit_attrs = False
 
     def __init__(self, coordinator, device_id: str):
         """Initialize the water heater."""
@@ -53,7 +52,7 @@ class AOSmithWaterHeater(AOSmithEntity, WaterHeaterEntity):
             | WaterHeaterEntityFeature.ON_OFF
             | WaterHeaterEntityFeature.OPERATION_MODE
         )
-        self._attr_operation_list = [STATE_OFF, STATE_GAS]
+        self._attr_operation_list = [STATE_GAS]
         self._attr_precision = 1.0
         
         # Initialize state variables
@@ -94,7 +93,7 @@ class AOSmithWaterHeater(AOSmithEntity, WaterHeaterEntity):
     def current_operation(self) -> str:
         """Return current operation mode."""
         self._update_states_from_data()
-        return STATE_GAS if self._power_state else STATE_OFF
+        return STATE_GAS
 
     @property
     def operation_list(self) -> list[str]:
@@ -206,9 +205,7 @@ class AOSmithWaterHeater(AOSmithEntity, WaterHeaterEntity):
 
     async def async_set_operation_mode(self, operation_mode: str) -> None:
         """Set operation mode."""
-        if operation_mode == STATE_OFF:
-            await self.async_turn_off()
-        elif operation_mode == STATE_GAS:
+        if operation_mode == STATE_GAS:
             await self.async_turn_on()
         else:
             _LOGGER.warning(
@@ -221,17 +218,7 @@ class AOSmithWaterHeater(AOSmithEntity, WaterHeaterEntity):
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return extra state attributes."""
         self._update_states_from_data()
-        if not self._logged_homekit_attrs:
-            _LOGGER.info(
-                "Water heater %s HomeKit attrs: supported_features=%s, "
-                "operation_list=%s, current_operation=%s",
-                self.device_id,
-                self.supported_features,
-                self.operation_list,
-                self.current_operation,
-            )
-            self._logged_homekit_attrs = True
-        
+
         attrs = {
             "device_id": self.device_id,
             "power_state": "on" if self._power_state else "off",
