@@ -48,6 +48,7 @@ class AOSmithWaterHeater(AOSmithEntity, WaterHeaterEntity):
         self._attr_unique_id = f"{device_id}_water_heater"
         self._attr_supported_features = (
             WaterHeaterEntityFeature.TARGET_TEMPERATURE
+            | WaterHeaterEntityFeature.ON_OFF
         )
         self._attr_precision = 1.0
         
@@ -64,10 +65,12 @@ class AOSmithWaterHeater(AOSmithEntity, WaterHeaterEntity):
             return
 
         power_status = output_data.get("powerStatus")
-        self._power_state = power_status == "1"
+        if power_status is None:
+            power_status = output_data.get("powerOn")
+        self._power_state = str(power_status) == "1"
 
         cruise_status = output_data.get("cruiseStatus")
-        self._cruise_state = cruise_status == "1"
+        self._cruise_state = str(cruise_status) == "1"
 
         half_pipe_status = output_data.get("halfPipeStatus")
         if half_pipe_status is None:
