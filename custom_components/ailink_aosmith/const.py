@@ -19,7 +19,7 @@ CONF_ENABLE_RAW_SENSORS = "enable_raw_sensors"
 DEFAULT_NAME = "Ai-Link A.O. Smith Water Heater"
 DEFAULT_LANGUAGE = "zh-Hans"
 DEFAULT_UPDATE_INTERVAL = 60
-DEFAULT_ENABLE_RAW_SENSORS = True
+DEFAULT_ENABLE_RAW_SENSORS = False
 
 # Platforms provided by this integration
 PLATFORMS = ["water_heater", "sensor", "switch", "number"]

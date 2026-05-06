@@ -36,7 +36,7 @@
     "sensor": {
       "waterTemp": {"name": "Current Temperature", "group": "temperature", "unit": "°C", "icon": "mdi:thermometer"},
       "inWaterTemp": {"name": "Inlet Temperature", "group": "temperature", "unit": "°C", "icon": "mdi:thermometer"},
-      "outWaterTemp": {"name": "Outlet Temperature", "group": "temperature", "unit": "°C", "icon": "mdi:thermometer"},
+      "outWaterTemp": {"name": "Current Outlet Temperature", "group": "temperature", "unit": "°C", "icon": "mdi:thermometer"},
       "hotWaterTemp": {"name": "Hot Water Temperature", "group": "temperature", "unit": "°C", "icon": "mdi:thermometer"},
       "waterFlow": {"name": "Water Flow", "group": "water", "unit": "L/min", "icon": "mdi:water-pump"},
       "fireTimes": {"name": "Ignition Count", "group": "combustion", "unit": "times", "icon": "mdi:fire"},
@@ -49,9 +49,13 @@
       "gasPressure": {"name": "Gas Pressure", "group": "combustion", "unit": "kPa", "icon": "mdi:gauge"},
       "waterHardness": {"name": "Water Hardness", "group": "water_quality", "unit": "mg/L", "icon": "mdi:potable-water"},
       "fanSpeed": {"name": "Fan Speed", "group": "fan", "unit": "RPM", "icon": "mdi:fan"},
+      "fanSpeedFeedback": {"name": "Fan Feedback Speed", "group": "fan", "unit": "RPM", "icon": "mdi:fan"},
       "fanCurrent": {"name": "Fan Current", "group": "fan", "unit": "A", "icon": "mdi:current-ac"},
       "coConcentration": {"name": "CO Concentration", "group": "combustion", "unit": "ppm", "icon": "mdi:molecule-co"},
+      "cOConcentration": {"name": "CO Concentration", "group": "combustion", "unit": "ppm", "icon": "mdi:molecule-co"},
       "deviceStatus": {"name": "Device Status", "group": "fault", "unit": "", "icon": "mdi:information", "value_map": {"1": "Running", "0": "Off"}},
+      "workStatus": {"name": "Work Status", "group": "fault", "unit": "", "icon": "mdi:information", "value_map": {"1": "Running", "0": "Stopped"}},
+      "heating": {"name": "Heating Status", "group": "combustion", "unit": "", "icon": "mdi:fire", "value_map": {"1": "Heating", "0": "Idle"}},
       "powerStatus": {"name": "Power Status", "group": "fault", "unit": "", "icon": "mdi:power-plug", "value_map": {"1": "Powered", "0": "Off"}},
       "errorCode": {"name": "Error Code", "group": "fault", "unit": "", "icon": "mdi:alert"},
       "secRpmTimeA": {"name": "Aux RPM Time A", "group": "pump_valve", "unit": "seconds", "icon": "mdi:timer"},
@@ -71,7 +75,8 @@
       "secVersionCode": {"name": "Firmware Version Code", "group": "fault", "unit": "", "icon": "mdi:information"},
       "cruiseStatus": {"name": "Cruise Status", "group": "mode", "unit": "", "icon": "mdi:water-sync", "value_map": {"1": "On", "0": "Off"}},
       "pressurizeStatus": {"name": "Pressurize Status", "group": "mode", "unit": "", "icon": "mdi:water-pump", "value_map": {"1": "On", "0": "Off"}},
-      "halfPipeStatus": {"name": "Half Pipe Status", "group": "mode", "unit": "", "icon": "mdi:pipe", "value_map": {"1": "On", "0": "Off"}}
+      "halfPipeStatus": {"name": "Half Pipe Status", "group": "mode", "unit": "", "icon": "mdi:pipe", "value_map": {"1": "On", "0": "Off"}},
+      "halfPipeCirclelStatus": {"name": "Eco Zero Cold Water Status", "group": "mode", "unit": "", "icon": "mdi:pipe", "value_map": {"1": "On", "0": "Off"}}
     },
     "water_heater": {
       "default_name": "Ai-Link A.O. Smith Water Heater",

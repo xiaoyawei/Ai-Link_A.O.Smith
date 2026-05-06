@@ -19,6 +19,14 @@ from .translations import async_load_translation
 
 _LOGGER = logging.getLogger(__name__)
 
+MERGED_SENSOR_KEYS = {
+    "powerStatus",
+    "cruiseStatus",
+    "pressurizeStatus",
+    "halfPipeStatus",
+    "halfPipeCirclelStatus",
+}
+
 
 
 async def async_setup_entry(
@@ -70,6 +78,8 @@ async def async_setup_entry(
             continue
         # Create mapped sensors
         for sensor_key in sensor_mapping.keys():
+            if sensor_key in MERGED_SENSOR_KEYS:
+                continue
             entities.append(AOSmithSensor(coordinator, device_id, sensor_key, sensor_mapping))
 
         # Create raw sensors for extra keys not in mapping
@@ -124,13 +134,11 @@ class AOSmithSensor(AOSmithEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self):
-        """Return all other outputData keys as extra attributes."""
-        output = self._get_output_data()
-        attrs = {}
-        for k, v in output.items():
-            if k != self._sensor_key:
-                attrs[k] = v
-        return attrs
+        """Return metadata for this mapped sensor."""
+        return {
+            "source_key": self._sensor_key,
+            "group": self._group,
+        }
 
 
 class AOSmithRawSensor(AOSmithEntity, SensorEntity):
@@ -151,8 +159,4 @@ class AOSmithRawSensor(AOSmithEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self):
-        return {
-            k: v
-            for k, v in self._get_output_data().items()
-            if k != self._sensor_key
-        }
+        return {"source_key": self._sensor_key}

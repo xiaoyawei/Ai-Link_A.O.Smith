@@ -154,6 +154,8 @@ class AOSmithHalfPipeSwitch(AOSmithBaseSwitch):
             half_pipe_status = output_data.get("setHalfPipeCircle")
         if half_pipe_status is None:
             half_pipe_status = output_data.get("halfPipeCircle")
+        if half_pipe_status is None:
+            half_pipe_status = output_data.get("halfPipeCirclelStatus")
         return str(half_pipe_status) == "1"
 
     async def _send_turn_on_command(self):

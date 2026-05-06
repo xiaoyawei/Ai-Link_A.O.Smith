@@ -9,7 +9,7 @@ from homeassistant.components.water_heater import (
     WaterHeaterEntityFeature,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_TEMPERATURE, UnitOfTemperature
+from homeassistant.const import ATTR_TEMPERATURE, STATE_OFF, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -17,6 +17,8 @@ from .const import DOMAIN, WATER_HEATER_MIN_TEMP, WATER_HEATER_MAX_TEMP, WATER_H
 from .entity import AOSmithEntity
 
 _LOGGER = logging.getLogger(__name__)
+
+OPERATION_HEAT = "heat"
 
 
 async def async_setup_entry(
@@ -49,7 +51,9 @@ class AOSmithWaterHeater(AOSmithEntity, WaterHeaterEntity):
         self._attr_supported_features = (
             WaterHeaterEntityFeature.TARGET_TEMPERATURE
             | WaterHeaterEntityFeature.ON_OFF
+            | WaterHeaterEntityFeature.OPERATION_MODE
         )
+        self._attr_operation_list = [STATE_OFF, OPERATION_HEAT]
         self._attr_precision = 1.0
         
         # Initialize state variables
@@ -77,6 +81,8 @@ class AOSmithWaterHeater(AOSmithEntity, WaterHeaterEntity):
             half_pipe_status = output_data.get("setHalfPipeCircle")
         if half_pipe_status is None:
             half_pipe_status = output_data.get("halfPipeCircle")
+        if half_pipe_status is None:
+            half_pipe_status = output_data.get("halfPipeCirclelStatus")
         self._half_pipe_state = str(half_pipe_status) == "1"
 
         pressurize_status = output_data.get("pressurizeStatus")
@@ -88,23 +94,24 @@ class AOSmithWaterHeater(AOSmithEntity, WaterHeaterEntity):
     def current_operation(self) -> str:
         """Return current operation mode."""
         self._update_states_from_data()
-        
-        if not self._power_state:
-            return "off"
-        
-        # Build operation description based on active states
-        states = []
+        return OPERATION_HEAT if self._power_state else STATE_OFF
+
+    @property
+    def operation_list(self) -> list[str]:
+        """Return the supported operation modes."""
+        return self._attr_operation_list
+
+    @property
+    def _active_modes(self) -> list[str]:
+        """Return active optional modes for attributes."""
+        modes = []
         if self._cruise_state:
-            states.append("零冷水")
+            modes.append("零冷水")
         if self._half_pipe_state:
-            states.append("节能零冷水")
+            modes.append("节能零冷水")
         if self._pressurize_state:
-            states.append("增压")
-        
-        if states:
-            return " | ".join(states)
-        else:
-            return "加热"
+            modes.append("增压")
+        return modes
 
     @property
     def current_temperature(self) -> float | None:
@@ -197,6 +204,19 @@ class AOSmithWaterHeater(AOSmithEntity, WaterHeaterEntity):
         except Exception as e:
             _LOGGER.error("Failed to turn off water heater %s: %s", self.device_id, e)
 
+    async def async_set_operation_mode(self, operation_mode: str) -> None:
+        """Set operation mode."""
+        if operation_mode == STATE_OFF:
+            await self.async_turn_off()
+        elif operation_mode == OPERATION_HEAT:
+            await self.async_turn_on()
+        else:
+            _LOGGER.warning(
+                "Unsupported operation mode %s for water heater %s",
+                operation_mode,
+                self.device_id,
+            )
+
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return extra state attributes."""
@@ -205,6 +225,7 @@ class AOSmithWaterHeater(AOSmithEntity, WaterHeaterEntity):
         attrs = {
             "device_id": self.device_id,
             "power_state": "on" if self._power_state else "off",
+            "active_modes": self._active_modes,
             "cruise_state": "on" if self._cruise_state else "off",
             "half_pipe_state": "on" if self._half_pipe_state else "off",
             "pressurize_state": "on" if self._pressurize_state else "off",
