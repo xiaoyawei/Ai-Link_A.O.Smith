@@ -82,7 +82,7 @@
       "default_name": "史密斯 燃气热水器",
       "operation_mode": {
         "off": "关闭", 
-        "heat": "加热",
+        "gas": "燃气加热",
         "cruise": "零冷水", 
         "half_pipe": "节能零冷水"
       }

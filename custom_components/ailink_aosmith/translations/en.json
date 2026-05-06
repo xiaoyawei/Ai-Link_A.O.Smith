@@ -82,7 +82,7 @@
       "default_name": "Ai-Link A.O. Smith Water Heater",
       "operation_mode": {
         "off": "Off", 
-        "heat": "Heating",
+        "gas": "Gas Heating",
         "cruise": "Zero Cold Water", 
         "half_pipe": "Eco Zero Cold Water"
       }
