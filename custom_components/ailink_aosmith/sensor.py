@@ -130,6 +130,10 @@ class AOSmithSensor(AOSmithEntity, SensorEntity):
                 return None
             if val.replace(".", "", 1).isdigit():
                 return float(val) if "." in val else int(val)
+            if self._attr_native_unit_of_measurement is not None:
+                return None
+        elif self._attr_native_unit_of_measurement is not None and not isinstance(value, (int, float)):
+            return None
         return value
 
     @property

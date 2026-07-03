@@ -39,7 +39,7 @@ class AOSmithConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             try:
                 # Validate the provided credentials by trying to get devices
                 devices = await self._get_devices(
-                    user_input[CONF_ACCESS_TOKEN],
+                    user_input.get(CONF_ACCESS_TOKEN),
                     user_input[CONF_USER_ID],
                     user_input[CONF_FAMILY_ID],
                     user_input.get(CONF_COOKIE),
@@ -65,7 +65,7 @@ class AOSmithConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "auth_error"
         
         data_schema = vol.Schema({
-            vol.Required(CONF_ACCESS_TOKEN): str,
+            vol.Optional(CONF_ACCESS_TOKEN): str,
             vol.Required(CONF_USER_ID): str,
             vol.Required(CONF_FAMILY_ID): str,
             vol.Optional(CONF_COOKIE): str,
@@ -77,12 +77,12 @@ class AOSmithConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=data_schema,
             errors=errors,
             description_placeholders={
-                "access_token": "通常为: Bearer xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+                "access_token": "可选: Bearer xxxxxxxx...",
                 "cookie": "通常为: cna=xxxxxxx"
             }
         )
     
-    async def _get_devices(self, access_token: str, user_id: str, family_id: str, cookie: str = None, mobile: str = None) -> list:
+    async def _get_devices(self, access_token: str | None, user_id: str, family_id: str, cookie: str = None, mobile: str = None) -> list:
         """Get list of devices."""
         from .api import AOSmithAPI
         

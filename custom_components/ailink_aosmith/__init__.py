@@ -30,7 +30,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     try:
         # Initialize API
         api = AOSmithAPI(
-            access_token=entry.data["access_token"],
+            access_token=entry.data.get("access_token"),
             user_id=entry.data["user_id"],
             family_id=entry.data["family_id"],
             cookie=entry.data.get("cookie"),

@@ -11,10 +11,19 @@ from .const import API_BASE_URL, DEVICE_CATEGORY_WATER_HEATER
 
 _LOGGER = logging.getLogger(__name__)
 
+ENCODE_SALT = "AILink_2021#"
+WEB_SIGN_SECRET = "ng957stzh4zy3dts"
+WEB_REFERER = "https://ailink-appservice-h5-prd.hotwater.com.cn/"
+WEB_USER_AGENT = (
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) "
+    "AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"
+)
+
+
 class AOSmithAPI:
     """A.O. Smith API client using pre-obtained access token."""
     
-    def __init__(self, access_token: str, user_id: str, family_id: str, cookie: str = None, mobile: str = None):
+    def __init__(self, access_token: str | None, user_id: str, family_id: str, cookie: str = None, mobile: str = None):
         """Initialize the API client."""
         self._access_token = access_token
         self._user_id = user_id
@@ -47,25 +56,22 @@ class AOSmithAPI:
         """Get list of user devices using getHomepageV2 endpoint."""
         if not self._session:
             raise Exception("API not authenticated")
-            
-        encode = self._generate_encode(self._user_id)
         
-        payload = {
-            "encode": encode,
+        payload = self._add_encode({
             "homePageVersion": "3", 
             "userId": self._user_id,
             "familyId": self._family_id
-        }
+        })
         
-        headers = await self._generate_headers(payload)
+        body, headers = self._prepare_signed_request(payload)
         
         _LOGGER.debug("Getting devices with payload: %s", payload)
         
         try:
             async with self._session.post(
                 f"{API_BASE_URL}/AiLinkService/appDevice/getHomepageV2",
-                json=payload,
-                headers=headers
+                data=body,
+                headers=headers,
             ) as response:
                 response_text = await response.text()
                 
@@ -134,23 +140,20 @@ class AOSmithAPI:
         """Get current device status."""
         if not self._session:
             raise Exception("API not authenticated")
-            
-        encode = self._generate_encode(device_id)
         
-        payload = {
+        payload = self._add_encode({
             "userId": self._user_id,
             "familyId": self._family_id,
             "deviceId": device_id,
-            "encode": encode
-        }
+        })
         
-        headers = await self._generate_headers(payload)
+        body, headers = self._prepare_signed_request(payload)
         
         try:
             async with self._session.post(
                 f"{API_BASE_URL}/AiLinkService/appDevice/getDeviceCurrInfo",
-                json=payload,
-                headers=headers
+                data=body,
+                headers=headers,
             ) as response:
                 response_text = await response.text()
                 
@@ -207,13 +210,13 @@ class AOSmithAPI:
             }, ensure_ascii=False)
         }
 
-        headers = await self._generate_headers(payload)
+        body, headers = self._prepare_signed_request(payload)
 
         try:
             async with self._session.post(
                 f"{API_BASE_URL}/AiLinkService/device/invokeMethod",
-                json=payload, 
-                headers=headers
+                data=body,
+                headers=headers,
             ) as resp:
                 text = await resp.text()
                 if resp.status != 200:
@@ -226,47 +229,65 @@ class AOSmithAPI:
             _LOGGER.error("Failed to send command to %s: %s", device_id, e)
             return None
 
-    async def _generate_headers(self, payload: Dict[str, Any]) -> Dict[str, str]:
-        """Generate request headers."""
+    def _prepare_signed_request(self, payload: Dict[str, Any]) -> tuple[str, Dict[str, str]]:
+        """Build compact JSON body and signed Web headers."""
+        body = json.dumps(payload, ensure_ascii=False, separators=(',', ':'))
         timestamp = str(int(time.time() * 1000))
-        nonce = str(uuid.uuid4()).upper()
+        nonce = str(uuid.uuid4())
+        md5data = hashlib.md5(body.encode('utf-8')).hexdigest()
+        sign = hashlib.md5(
+            f"{md5data}{timestamp}{nonce}{WEB_SIGN_SECRET}".encode('utf-8')
+        ).hexdigest()
         
         headers = {
             "Host": "ailink-api.hotwater.com.cn",
-            "Authorization": f"Bearer {self._access_token}",
-            "version": "V1.0.1",
+            "userId": self._user_id,
+            "source": "Web",
+            "Referer": WEB_REFERER,
+            "X-Requested-With": "XMLHttpRequest",
+            "Cache-Control": "no-cache",
+            "User-Agent": WEB_USER_AGENT,
+            "traceId": f"{timestamp}-69861-0-02",
             "familyUk": "",
-            "UserId": self._user_id,
-            "timestamp": timestamp,
+            "Pragma": "no-cache",
+            "Origin": WEB_REFERER.rstrip("/"),
+            "accessToken": "",
+            "version": "V1.0.1",
             "nonce": nonce,
-            "Accept": "*/*",
-            "source": "IOS",
-            "md5data": self._generate_md5data(payload),
-            "Accept-Language": "zh-Hans-CN;q=1",
-            "Content-Type": "application/json",
-            "traceId": f"{timestamp}-69861-{self._user_id}-00",
-            "User-Agent": "AI jia zhi kong/2.2.5 (iPhone; iOS 26.0; Scale/3.00)",
-            "Cookie": self._cookie or "",
-            "sign": "",
+            "sign": sign,
+            "md5data": md5data,
+            "timestamp": timestamp,
+            "Authorization": self._authorization_header(),
+            "Accept": "application/json, text/plain, */*",
+            "Content-Type": "application/json;charset=UTF-8",
+            "familyId": self._family_id,
+            "Accept-Language": "en-US,en;q=0.9",
         }
+        if self._cookie:
+            headers["Cookie"] = self._cookie
         
-        return headers
+        return body, headers
     
-    def _generate_md5data(self, payload: Dict[str, Any]) -> str:
-        """Generate md5data by hashing the JSON payload."""
-        try:
-            json_str = json.dumps(payload, ensure_ascii=False, separators=(',', ':'))
-            md5_hash = hashlib.md5(json_str.encode('utf-8')).hexdigest()
-            return md5_hash
-        except Exception as e:
-            _LOGGER.error("Failed to generate md5data: %s", e)
-            return "7502271d2d3217c6aa2d80e21ebeed51"
-    
-    def _generate_encode(self, input_str: str) -> str:
-        """Generate encode parameter."""
-        timestamp = str(int(time.time()))
-        input_data = f"{input_str}{timestamp}"
-        return hashlib.md5(input_data.encode()).hexdigest()
+    def _add_encode(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Add the current Ai-Link H5 encode parameter to a payload."""
+        encoded_payload = dict(payload)
+        input_data = "".join(
+            str(encoded_payload[key])
+            for key in sorted(encoded_payload)
+            if key != "encode"
+        )
+        input_data += ENCODE_SALT
+        encoded_payload["encode"] = hashlib.md5(input_data.encode('utf-8')).hexdigest()
+        return encoded_payload
+
+    def _authorization_header(self) -> str:
+        """Return a valid Authorization header value."""
+        token = (self._access_token or "").strip()
+        if not token:
+            return ""
+        if token.lower().startswith("bearer "):
+            return token
+        return f"Bearer {token}"
     
     @property
     def is_authenticated(self) -> bool:

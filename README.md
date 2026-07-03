@@ -80,11 +80,11 @@
 由于 Ai家智控未提供公开的 API，您需要通过抓包获取以下参数：
 
 **必需参数：**
-- `access_token`：访问令牌（格式：Bearer xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx）
 - `user_id`：用户ID
 - `family_id`：家庭ID
 
 **可选参数：**
+- `access_token`：访问令牌。可使用请求头中的 `Authorization: Bearer ...`。当前 H5 签名接口在部分热水器读写场景下可不填
 - `cookie`：Cookie 信息（格式：cna=xxxxxxx）
 - `mobile`：手机号
 

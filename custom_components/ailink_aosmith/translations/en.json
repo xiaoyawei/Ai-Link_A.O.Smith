@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "Configure Ai-Link A.O. Smith",
-        "description": "Provide your Ai-Link credentials (access token, user id, family id, cookie). Optional: mobile."
+        "description": "Provide your Ai-Link credentials (user id, family id, cookie). Access token is optional and can be a Bearer token. Optional: mobile."
       }
     },
     "data": {

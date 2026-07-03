@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "配置 Ai-Link 史密斯",
-        "description": "提供 Ai-Link 凭证 (access token, user id, family id, cookie)。可选：手机号。"
+        "description": "提供 Ai-Link 凭证 (user id, family id, cookie)。access token 可选，可使用 Bearer token。可选：手机号。"
       }
     },
     "data": {
